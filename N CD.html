@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en" data-theme="aurora"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+ :root,[data-theme="aurora"]{--bg:#0e1022;--surface:#151833;--raise:#1f2450;--line:#2b3166;--text:#eceeff;--mute:#9da6dc;--up:#2fe3b0;--down:#ff6b9d;--gold:#a78bfa;--blue:#5ad1ff;--onacc:#120f2a}
+ [data-theme="sunset"]{--bg:#1a1117;--surface:#251922;--raise:#33232e;--line:#473340;--text:#fbeee8;--mute:#c9a9ad;--up:#7be0a0;--down:#ff6f61;--gold:#ff9f5a;--blue:#ffc86b;--onacc:#2a130a}
+ [data-theme="ink"]{--bg:#161d27;--surface:#1d2632;--raise:#263244;--line:#2e3b4e;--text:#e7ecf3;--mute:#93a3b8;--up:#3cc4a4;--down:#f0715f;--gold:#f0b94d;--blue:#6aa8ff;--onacc:#0f1620}
+ [data-theme="paper"]{--bg:#eef1f5;--surface:#ffffff;--raise:#f1f4f8;--line:#d9dfe8;--text:#18202b;--mute:#5d6b7e;--up:#0f8f72;--down:#d2483a;--gold:#9a6606;--blue:#2757c9;--onacc:#ffffff}
+ *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+ html,body{height:100%}
+ body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+ :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+ h1,h2{margin:0;font-weight:600} h1{font-size:20px} h2{font-size:15px}
+ .mute{color:var(--mute)} .up{color:var(--up)} .down{color:var(--down)}
+
+ .app{display:grid;grid-template-columns:200px 1fr;height:100vh;height:100dvh}
+ .rail{border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px;background:var(--surface)}
+ .brand{font-weight:600;font-size:16px;padding:4px 10px 16px;letter-spacing:.2px}
+ .brand span{color:var(--gold)}
+ .nav{display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;color:var(--mute);text-align:left;width:100%}
+ .nav svg{width:20px;height:20px;flex:none} .nav:hover{background:var(--raise)}
+ .nav[aria-current="page"]{color:var(--text);background:var(--raise);box-shadow:inset 3px 0 0 var(--gold)}
+ .rail .sp{flex:1}
+ .shell{display:flex;flex-direction:column;min-width:0;height:100%}
+ .ticker{display:flex;gap:22px;overflow-x:auto;padding:9px 18px;border-bottom:1px solid var(--line);background:var(--surface);scrollbar-width:none;white-space:nowrap}
+ .ticker::-webkit-scrollbar{display:none} .tk{font-size:13px;display:flex;gap:8px;flex:none}
+ .top{display:flex;align-items:baseline;gap:14px;padding:16px 20px 6px;flex-wrap:wrap}
+ #status{color:var(--mute);font-size:13px}
+ main{flex:1;overflow-y:auto;padding:8px 20px 28px}
+ .view{display:none;max-width:1080px} .view.on{display:block}
+
+ .pulse{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:8px;background:var(--surface);margin:10px 0 18px}
+ .pulse>div{padding:14px 16px;border-right:1px solid var(--line)} .pulse>div:last-child{border-right:0}
+ .pl{display:block;color:var(--mute);font-size:13px;margin-bottom:4px}
+ .pulse b{font-size:22px;font-weight:600}
+ .bar{position:relative;height:10px;border-radius:5px;margin:10px 0 8px;background:linear-gradient(90deg,#f0715f,#f0b94d 50%,#3cc4a4)}
+ .bar i{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;background:var(--text);box-shadow:0 0 0 2px var(--surface);transform:translateX(-2px);left:50%}
+ .moodtxt{font-size:13px}
+
+ .cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+ input,select,textarea{width:100%;padding:10px 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit}
+ table{width:100%;border-collapse:collapse}
+ th{font-weight:500;color:var(--mute);font-size:13px;text-align:right;padding:10px 8px;border-bottom:1px solid var(--line)}
+ td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:right}
+ th:first-child,td:first-child{text-align:left}
+ tr.coin{cursor:pointer} tr.coin:hover td{background:var(--raise)}
+ .sym{font-weight:600} .nm{color:var(--mute);font-size:12px}
+ .btn{height:38px;padding:0 14px;border-radius:6px;background:var(--gold);color:var(--onacc);font-weight:600}
+ .btn.alt{background:var(--raise);color:var(--text);font-weight:500}
+ .btn.sm{height:30px;padding:0 10px;font-size:13px}
+ .btn:disabled{opacity:.5}
+ .link{color:var(--blue);padding:6px 0;font-size:14px}
+
+ .side h2{margin-bottom:6px} .side ul,.feed{list-style:none;margin:0;padding:0}
+ .side li{padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+ .meta{display:flex;gap:8px;align-items:center;color:var(--mute);font-size:12px;margin-bottom:3px}
+ .off{color:var(--gold);font-weight:500}
+ .item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);align-items:center}
+ .item a{color:var(--text);text-decoration:none;font-weight:500;line-height:1.4} .item a:hover{text-decoration:underline}
+ .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 6px}
+ .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--mute);font-size:14px}
+ .chip[aria-pressed="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+ details{margin:10px 0;color:var(--mute);font-size:13px} summary{cursor:pointer}
+ .chan{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+ .chan a{padding:6px 12px;border:1px solid var(--line);border-radius:6px;color:var(--text);text-decoration:none;font-size:14px}
+ .chan a:hover{background:var(--raise)}
+
+ #log{display:flex;flex-direction:column;gap:12px;margin:12px 0}
+ .msg{max-width:min(720px,94%);padding:11px 14px;border-radius:8px;white-space:pre-wrap;line-height:1.55;word-wrap:break-word}
+ .me{align-self:flex-end;background:var(--raise)} .ai{align-self:flex-start;border:1px solid var(--line);background:var(--surface)}
+ .tag{font-size:12px;color:var(--mute);margin-top:6px}
+ .row{display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0}
+ .row textarea{flex:1;resize:none;height:46px}
+
+ .tool{border-top:1px solid var(--line);padding:18px 0}
+ .tool:first-child{border-top:0}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+ label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+ .stat{border-left:2px solid var(--line);padding:2px 12px} .stat small{display:block;color:var(--mute);font-size:12px} .stat b{font-size:18px;font-weight:600}
+ .note{color:var(--mute);font-size:13px;margin-top:10px}
+
+ .overlay{position:fixed;inset:0;background:#0009;display:none;z-index:20;align-items:center;justify-content:center;padding:16px}
+ .overlay.on{display:flex}
+ .sheet{background:var(--surface);border:1px solid var(--line);border-radius:10px;width:100%;max-width:440px;padding:20px;max-height:92vh;overflow-y:auto}
+ .sheet .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+ .big{font-size:30px;font-weight:600}
+ .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+ @media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  .rail{order:2;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:6px;gap:2px;justify-content:space-around}
+  .brand,.rail .sp,.rail .util{display:none}
+  .nav{flex-direction:column;gap:2px;font-size:12px;justify-content:center;align-items:center;padding:6px 4px}
+  .nav[aria-current="page"]{box-shadow:inset 0 3px 0 var(--gold)}
+  .cols{grid-template-columns:1fr} .pulse{grid-template-columns:1fr 1fr} .pulse>div:nth-child(2){border-right:0} .pulse>div:nth-child(3){grid-column:span 2;border-top:1px solid var(--line)}
+  main{padding:8px 14px 20px} .top{padding:12px 14px 4px} .ticker{padding:8px 14px}
+  .grid{grid-template-columns:1fr 1fr}
+ }
+ .ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 12px}
+ .ctl select{width:auto;min-width:130px}
+ .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+ .seg button{padding:7px 13px;color:var(--mute);font-size:14px}
+ .seg button[aria-pressed="true"]{background:var(--raise);color:var(--text);box-shadow:inset 0 -2px 0 var(--gold)}
+ .chartbox{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 10px 4px}
+ .chartbox canvas{display:block;width:100%;touch-action:pan-y}
+ .chartbox.full{position:fixed;inset:0;z-index:30;border-radius:0;background:var(--bg);display:flex;flex-direction:column;padding:14px}
+ #ch_close{display:none;position:absolute;top:10px;right:12px} .chartbox.full #ch_close{display:inline-block}
+ .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;padding:2px 4px 8px;min-height:32px;padding-right:90px}
+ .legend i{color:var(--mute);font-style:normal} .lgh{font-weight:600} .lgt{color:var(--mute)}
+ .heat{position:relative;height:460px;border-radius:8px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+ .heat[hidden]{display:none}
+ .tile{position:absolute;padding:8px 10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;gap:2px;border-radius:3px}
+ .tile b{font-size:15px;font-weight:600} .tile span{font-size:13px}
+ .tile:hover{filter:brightness(1.15)}
+ @media (max-width:860px){.heat{height:380px}}
+ .mutil{display:none}
+ @media (max-width:860px){.mutil{display:inline-flex}}
+ .toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:90vw;font-size:14px}
+ .star{color:var(--gold);margin-right:4px}
+ .msg b{font-weight:600}
+ @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body>
+<div class="app">
+  <nav class="rail" aria-label="Main">
+    <div class="brand">Crypto <span>Desk</span></div>
+    <button class="nav" data-v="market" aria-current="page"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 16V9m5 7V4m5 12v-6m5 6V7"/></svg>Market</button>
+    <button class="nav" data-v="chart"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3v14M14 3v14"/><rect x="4" y="7" width="4" height="6" rx="1"/><rect x="12" y="5" width="4" height="8" rx="1"/></svg>Chart</button>
+    <button class="nav" data-v="news"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h9"/></svg>News</button>
+    <button class="nav" data-v="ai"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h12v8H9l-4 3v-3H4z"/></svg>Assistant</button>
+    <button class="nav" data-v="tools"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 7h6M7 11h2m2 0h2M7 14h2m2 0h2"/></svg>Tools</button>
+    <div class="sp"></div>
+    <button class="nav util" id="themebtn">Light / Dark</button>
+    <button class="nav util" id="keybtn">Keys</button>
+  </nav>
+  <div class="shell">
+    <div class="ticker" id="ticker" aria-label="Live prices"></div>
+    <header class="top"><h1 id="title">Market</h1><span id="status" aria-live="polite">connect ho raha hai...</span>
+      <span style="flex:1"></span><div class="seg" id="cur" aria-label="Currency"><button data-v="USD" aria-pressed="true">USD</button><button data-v="PKR" aria-pressed="false">PKR</button></div>
+      <button class="btn alt sm mutil" id="themebtn2">Theme</button><button class="btn alt sm mutil" id="keybtn2">Keys</button>
+    </header>
+    <main>
+      <!-- MARKET -->
+      <section class="view on" id="v-market">
+        <div class="pulse">
+          <div><span class="pl">Total market cap</span><b id="p_cap">-</b> <span id="p_chg" class="mute"></span></div>
+          <div><span class="pl">Bitcoin dominance</span><b id="p_dom">-</b></div>
+          <div><span class="pl">Market mood (Fear &amp; Greed)</span><div class="bar"><i id="pin"></i></div><div class="moodtxt" id="moodtxt">-</div></div>
+        </div>
+        <div class="cols">
+          <section>
+            <div class="seg" id="mk_view" style="margin-bottom:10px"><button data-v="list" aria-pressed="true">List</button><button data-v="heat" aria-pressed="false">Heatmap</button></div>
+            <div id="heat" class="heat" hidden></div>
+            <div id="listwrap">
+            <div class="ctl"><input id="filter" style="flex:1;min-width:160px" placeholder="Coin dhoondein (btc, eth, sol)" aria-label="Coin dhoondein"><button class="chip" id="wl_only" aria-pressed="false">&#9733; Watchlist</button></div>
+            <table><thead><tr><th>Coin</th><th>Price (USD)</th><th>24 ghante</th><th>7 din</th></tr></thead><tbody id="tb"></tbody></table>
+            <p class="note">Kisi coin par tap karein: chart, AI se samjhana, aur risk calculator mein bhejna.</p>
+            </div>
+          </section>
+          <aside class="side">
+            <h2>Official updates</h2>
+            <ul id="offlist"><li class="mute">Load ho raha hai...</li></ul>
+            <button class="link" id="gonews">Poori news dekhein</button>
+          </aside>
+        </div>
+      </section>
+      <!-- CHART -->
+      <section class="view" id="v-chart">
+        <div class="ctl">
+          <select id="ch_coin" aria-label="Coin"></select>
+          <div class="seg" id="ch_tf" aria-label="Time frame"><button data-v="15m" aria-pressed="false">15m</button><button data-v="1h" aria-pressed="true">1h</button><button data-v="4h" aria-pressed="false">4h</button><button data-v="1d" aria-pressed="false">1d</button></div>
+          <div class="seg" id="ch_type" aria-label="Chart type"><button data-v="candles" aria-pressed="true">Candles</button><button data-v="line" aria-pressed="false">Line</button></div>
+          <div class="seg" id="ch_n" aria-label="Candles ki tadaad"><button data-v="50" aria-pressed="false">50</button><button data-v="100" aria-pressed="true">100</button><button data-v="200" aria-pressed="false">200</button></div>
+          <button class="chip" id="ch_ma" aria-pressed="false">Moving averages</button>
+          <button class="btn alt sm" id="ch_full">Full screen</button>
+        </div>
+        <div class="chartbox" id="chartbox">
+          <button class="btn alt sm" id="ch_close">Band karein</button>
+          <div class="legend" id="ch_legend"></div>
+          <canvas id="cv" role="img" aria-label="Price chart"></canvas>
+        </div>
+        <p class="note" id="ch_note"></p>
+      </section>
+      <!-- NEWS -->
+      <section class="view" id="v-news">
+        <div class="chips" id="newsfilter">
+          <button class="chip" data-f="all" aria-pressed="true">Sab</button>
+          <button class="chip" data-f="official" aria-pressed="false">Official</button>
+          <button class="chip" data-f="crypto" aria-pressed="false">Crypto media</button>
+        </div>
+        <div class="note" id="newsstat" style="margin:0 0 4px"></div>
+        <details id="newsdet"><summary>Kaunse sources chale</summary><div id="newsdetbody"></div></details>
+        <ul class="feed" id="feed"></ul>
+        <div class="tool">
+          <h2>Official accounts (naye tab mein khulte hain)</h2>
+          <div class="chan">
+            <a href="https://x.com/federalreserve" target="_blank" rel="noopener noreferrer">Federal Reserve</a>
+            <a href="https://x.com/SECGov" target="_blank" rel="noopener noreferrer">SEC</a>
+            <a href="https://x.com/ecb" target="_blank" rel="noopener noreferrer">ECB</a>
+            <a href="https://x.com/binance" target="_blank" rel="noopener noreferrer">Binance</a>
+            <a href="https://x.com/coinbase" target="_blank" rel="noopener noreferrer">Coinbase</a>
+            <a href="https://x.com/ethereumfndn" target="_blank" rel="noopener noreferrer">Ethereum Foundation</a>
+          </div>
+          <p class="note">Social posts ko seedha is page mein dikhane ke liye X ki paid API chahiye. Isliye yahan sirf links hain; khabrein upar official feeds se aati hain.</p>
+        </div>
+      </section>
+      <!-- ASSISTANT -->
+      <section class="view" id="v-ai">
+        <div class="chips" id="sugg"></div>
+        <div id="log"></div>
+        <div class="row"><textarea id="q" placeholder="Market ya kisi khabar ke baare mein poochhein..." aria-label="Sawal"></textarea><button class="btn" id="send">Bhejo</button><button class="btn alt" id="stop" hidden>Roko</button><button class="btn alt" id="clr" title="Chat saaf karein">Saaf</button></div>
+        <p class="note">Assistant ko live prices aur taza headlines milti hain. Woh samjhata hai; kharidne/bechne ki salah ya price ki peshgoi nahi karta.</p>
+      </section>
+      <!-- TOOLS -->
+      <section class="view" id="v-tools">
+        <div class="tool">
+          <h2>Risk calculator</h2>
+          <div class="grid">
+            <div><label for="c_bal">Account balance ($)</label><input id="c_bal" type="number" inputmode="decimal" value="1000"></div>
+            <div><label for="c_risk">Risk per trade (%)</label><input id="c_risk" type="number" inputmode="decimal" value="1"></div>
+            <div><label for="c_entry">Entry price</label><input id="c_entry" type="number" inputmode="decimal" placeholder="65000"></div>
+            <div><label for="c_stop">Stop-loss price</label><input id="c_stop" type="number" inputmode="decimal" placeholder="63500"></div>
+            <div style="grid-column:span 2"><label for="c_target">Target price (optional)</label><input id="c_target" type="number" inputmode="decimal" placeholder="69000"></div>
+          </div>
+          <div class="grid" id="c_out" style="margin-top:16px"></div>
+          <p class="note">Fees aur slippage shamil nahi. Stop-loss entry se neeche ho to Long, upar ho to Short samjha jata hai.</p>
+        </div>
+        <div class="tool">
+          <h2>Trade journal</h2>
+          <div class="grid">
+            <div><label for="j_coin">Coin</label><input id="j_coin" placeholder="BTC"></div>
+            <div><label for="j_side">Side</label><select id="j_side"><option value="long">Long</option><option value="short">Short</option></select></div>
+            <div><label for="j_entry">Entry</label><input id="j_entry" type="number" inputmode="decimal"></div>
+            <div><label for="j_exit">Exit</label><input id="j_exit" type="number" inputmode="decimal"></div>
+            <div><label for="j_qty">Quantity</label><input id="j_qty" type="number" inputmode="decimal"></div>
+            <div><label for="j_note">Note</label><input id="j_note" placeholder="kyun liya?"></div>
+          </div>
+          <div style="margin-top:12px"><button class="btn" id="j_add">Trade save karein</button><button class="btn alt" id="j_csv" style="margin-left:8px">CSV export</button></div>
+          <div class="grid" id="j_stats" style="margin-top:16px;grid-template-columns:repeat(3,1fr)"></div>
+          <table style="margin-top:10px"><tbody id="j_list"></tbody></table>
+        </div>
+        <div class="tool"><h2>Currency converter</h2><div class="grid"><div style="grid-column:span 2"><label for="v_amt">Amount</label><input id="v_amt" type="number" inputmode="decimal" value="100"></div><div><label for="v_from">From</label><select id="v_from"></select></div><div><label for="v_to">To</label><select id="v_to"></select></div></div><div style="margin-top:12px"><button class="btn alt" id="v_swap">Ulta karein</button></div><div class="grid" id="v_out" style="margin-top:16px"></div><p class="note">Fiat rates CoinGecko ke USDT rate se nikalte hain, is liye approximate hain; bank ya P2P rate thora alag ho sakta hai. Coins ki price live market se aati hai.</p></div><div class="tool"><h2>Price alerts</h2><div class="grid"><div><label for="a_coin">Coin</label><select id="a_coin"></select></div><div><label for="a_price">Alert price (USD)</label><input id="a_price" type="number" inputmode="decimal"></div></div><div style="margin-top:12px"><button class="btn" id="a_add">Alert lagao</button></div><table style="margin-top:10px"><tbody id="a_list"></tbody></table><p class="note">Alert tab tak chalta hai jab tak ye page khula ho. Price har minute check hoti hai.</p></div><p class="note">Sirf seekhne aur hisaab ke liye, financial advice nahi. Crypto mein poora paisa doobne ka khatra hota hai.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="drawer" role="dialog" aria-modal="true" aria-labelledby="d_name"><div class="sheet">
+  <div class="hd"><div><h2 id="d_name">-</h2><div class="mute" id="d_sub"></div></div><button class="btn alt sm" id="d_close">Band karein</button></div>
+  <div class="big" id="d_price">-</div><div id="d_chg"></div>
+  <div id="d_chart" style="margin-top:14px"></div>
+  <div class="acts"><button class="btn" id="d_big">Bada chart dekhein</button><button class="btn alt" id="d_ai">AI se samjhao</button><button class="btn alt" id="d_calc">Risk calculator mein bhejo</button><button class="btn alt" id="d_wl">Watchlist</button><button class="btn alt" id="d_alert">Alert lagao</button></div>
+</div></div>
+
+<div class="overlay" id="keys" role="dialog" aria-modal="true" aria-labelledby="k_t"><div class="sheet">
+  <h2 id="k_t" style="margin-bottom:10px">API keys</h2>
+  <label for="k_groq">Groq key (AI ke liye, sab se tez)</label><input id="k_groq" type="password" autocomplete="off">
+  <label for="k_gemini" style="margin-top:12px">Gemini key (backup)</label><input id="k_gemini" type="password" autocomplete="off">
+  <div class="acts"><button class="btn" id="k_save">Save</button><button class="btn alt" id="k_close">Band karein</button></div>
+  <p class="note">Keys sirf aap ke is browser mein save hoti hain. Prices aur news ke liye key ki zaroorat nahi.</p>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+function mk(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+async function jget(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+
+// ---------- formatting ----------
+function fp(n){ if(n==null||isNaN(n)) return '-'; if(n>=1000) return n.toLocaleString('en-US',{maximumFractionDigits:2}); if(n>=1) return n.toFixed(2); if(n>=0.01) return n.toFixed(4); return n.toFixed(6); }
+function fmtBig(n){ if(n==null||isNaN(n)) return '-'; if(n>=1e12) return '$'+(n/1e12).toFixed(2)+'T'; if(n>=1e9) return '$'+(n/1e9).toFixed(1)+'B'; return '$'+(n/1e6).toFixed(0)+'M'; }
+function pct(n){ return n==null?'-':((n>=0?'+':'')+n.toFixed(2)+'%'); }
+function timeAgo(d){ if(!d) return ''; let s=(Date.now()-d.getTime())/1000; if(s<0)s=0;
+  if(s<60) return 'abhi abhi'; if(s<3600) return Math.floor(s/60)+' min pehle'; if(s<86400) return Math.floor(s/3600)+' ghante pehle'; return Math.floor(s/86400)+' din pehle'; }
+function parseDate(s){ if(!s) return null; const d=new Date(/^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/.test(s)?s.replace(' ','T')+'Z':s); return isNaN(d.getTime())?null:d; }
+
+// ---------- theme, keys, navigation ----------
+const THEMES=['aurora','sunset','ink','paper'],THEME_NAME={aurora:'Aurora',sunset:'Sunset',ink:'Ink',paper:'Paper'};
+function applyTheme(t){
+  if(!THEMES.includes(t)) t='aurora';
+  document.documentElement.setAttribute('data-theme',t);
+  $('themebtn').textContent='Theme: '+THEME_NAME[t];$('themebtn2').textContent=THEME_NAME[t];
+  try{localStorage.setItem('theme',t);}catch(e){}
+  try{if($('v-chart').classList.contains('on'))drawChart();}catch(e){}
+}
+function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');applyTheme(THEMES[(THEMES.indexOf(cur)+1)%THEMES.length]);}
+try{applyTheme(localStorage.getItem('theme')||'aurora');}catch(e){applyTheme('aurora');}
+$('themebtn').onclick=$('themebtn2').onclick=toggleTheme;
+function getKey(p){try{return (localStorage.getItem('key_'+p)||'').trim();}catch(e){return '';}}
+function setKey(p,v){try{localStorage.setItem('key_'+p,v.trim());}catch(e){}}
+function openKeys(){for(const p of ['groq','gemini']) $('k_'+p).value=getKey(p);$('keys').classList.add('on');$('k_groq').focus();}
+$('keybtn').onclick=$('keybtn2').onclick=openKeys;
+$('k_close').onclick=()=>$('keys').classList.remove('on');
+$('k_save').onclick=()=>{for(const p of ['groq','gemini']) setKey(p,$('k_'+p).value);$('keys').classList.remove('on');};
+const TITLES={market:'Market',chart:'Chart',news:'News',ai:'Assistant',tools:'Tools'};
+function go(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  document.querySelectorAll('.nav[data-v]').forEach(b=>b.setAttribute('aria-current',b.dataset.v===v?'page':'false'));
+  $('title').textContent=TITLES[v]; document.querySelector('main').scrollTop=0;
+  if(v==='chart') loadChart();
+  if(v==='market'&&heatOn) renderHeat();
+}
+document.querySelectorAll('.nav[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));
+$('gonews').onclick=()=>go('news');
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('drawer').classList.remove('on');$('keys').classList.remove('on');if($('chartbox').classList.contains('full')){$('chartbox').classList.remove('full');drawChart();}}});
+['drawer','keys'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target.id===id)$(id).classList.remove('on');}));
+
+// ---------- prices ----------
+let coins=[],source='';
+const BIN=['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','TRX','AVAX','LINK','DOT','LTC'];
+async function fetchCoinGecko(){
+  const j=await jget('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=25&page=1&sparkline=true&price_change_percentage=24h');
+  return j.map(c=>({symbol:c.symbol,name:c.name,price:c.current_price,chg:c.price_change_percentage_24h,mcap:c.market_cap,spark:c.sparkline_in_7d&&c.sparkline_in_7d.price}));
+}
+async function fetchBinance(){
+  const j=await jget('https://api.binance.com/api/v3/ticker/24hr?symbols='+encodeURIComponent(JSON.stringify(BIN.map(s=>s+'USDT'))));
+  return j.map(c=>({symbol:c.symbol.replace('USDT','').toLowerCase(),name:c.symbol.replace('USDT',''),price:parseFloat(c.lastPrice),chg:parseFloat(c.priceChangePercent),mcap:null,spark:null}));
+}
+async function loadPrices(){
+  try{coins=await fetchCoinGecko();source='CoinGecko';}
+  catch(e1){try{coins=await fetchBinance();source='Binance';}catch(e2){if(coins.length){$('status').textContent='Prices purani hain, dobara koshish ho rahi hai ('+new Date().toLocaleTimeString()+')';renderTicker();renderPrices();}else $('status').textContent='Prices nahi aa rahin. Internet check karein.';return;}}try{localStorage.setItem('px_cache',JSON.stringify(coins));}catch(e){}checkAlerts();fillConv();
+  $('status').textContent='Live, '+new Date().toLocaleTimeString()+' ('+source+')';
+  renderTicker();renderPrices();
+  if(heatOn) renderHeat();
+}
+function renderTicker(){
+  const t=$('ticker');t.innerHTML='';
+  coins.slice(0,10).forEach(c=>{const s=mk('span','tk');s.append(mk('b',null,c.symbol.toUpperCase()),mk('span',null,mny(c.price)),mk('span',(c.chg||0)>=0?'up':'down',pct(c.chg)));s.tabIndex=0;s.style.cursor='pointer';s.onclick=()=>openChart(c.symbol.toUpperCase());t.appendChild(s);});
+}
+function sparkSVG(arr,up,w,h,fill){
+  if(!arr||arr.length<2) return null;
+  const step=Math.max(1,Math.floor(arr.length/60)),pts=arr.filter((_,i)=>i%step===0);
+  const mn=Math.min(...pts),mx=Math.max(...pts),rg=(mx-mn)||1,pad=3;
+  const xy=pts.map((v,i)=>[(i/(pts.length-1)*w),(h-pad-((v-mn)/rg)*(h-2*pad))]);
+  const line=xy.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const col='var('+(up?'--up':'--down')+')';
+  let inner='';
+  if(fill) inner+='<polygon points="0,'+h+' '+line+' '+w+','+h+'" style="fill:'+col+';opacity:.12"/>';
+  inner+='<polyline fill="none" style="stroke:'+col+'" stroke-width="2" stroke-linejoin="round" points="'+line+'"/>';
+  return {svg:'<svg viewBox="0 0 '+w+' '+h+'" width="'+(fill?'100%':w)+'" height="'+h+'" preserveAspectRatio="none">'+inner+'</svg>',mn,mx};
+}
+function renderPrices(){
+  const f=$('filter').value.trim().toLowerCase(),tb=$('tb');tb.innerHTML='';
+  coins.filter(c=>(!wlOnly||wl.includes(c.symbol.toLowerCase()))&&(!f||c.symbol.toLowerCase().includes(f)||String(c.name).toLowerCase().includes(f))).forEach(c=>{
+    const up=(c.chg||0)>=0,tr=mk('tr','coin');tr.tabIndex=0;
+    const a=mk('td');const sy=mk('div','sym');if(wl.includes(c.symbol.toLowerCase()))sy.append(mk('span','star','★'));sy.append(c.symbol.toUpperCase());a.append(sy,mk('div','nm',c.name));
+    const b=mk('td',null,mny(c.price)),d=mk('td',up?'up':'down',pct(c.chg)),e=mk('td');
+    const s=sparkSVG(c.spark,up,72,26,false);if(s)e.innerHTML=s.svg;else e.textContent='-';
+    tr.append(a,b,d,e);tr.onclick=()=>openCoin(c);tr.onkeydown=ev=>{if(ev.key==='Enter')openCoin(c);};tb.appendChild(tr);
+  });
+}
+$('filter').oninput=renderPrices;
+
+function openCoin(c){
+  const up=(c.chg||0)>=0;
+  $('d_name').textContent=c.name+' ('+c.symbol.toUpperCase()+')';
+  $('d_sub').textContent=c.mcap?('Market cap '+fmtBig(c.mcap)):'';
+  $('d_price').textContent=mny(c.price);
+  const ch=$('d_chg');ch.textContent=pct(c.chg)+' pichhle 24 ghante mein';ch.className=up?'up':'down';
+  const box=$('d_chart');box.innerHTML='';
+  const s=sparkSVG(c.spark,up,320,120,true);
+  if(s){box.innerHTML=s.svg;const r=mk('div','note','7 din: sab se kam $'+fp(s.mn)+', sab se zyada $'+fp(s.mx));box.appendChild(r);}
+  else box.appendChild(mk('div','note','Is source se 7 din ka chart nahi mila.'));
+  $('d_ai').onclick=()=>{$('drawer').classList.remove('on');go('ai');ask(c.symbol.toUpperCase()+' ('+c.name+') ke baare mein batao: abhi ka haal kaisa hai aur trader ko kin cheezon ka dhyan rakhna chahiye?');};
+  $('d_big').onclick=()=>{$('drawer').classList.remove('on');openChart(c.symbol.toUpperCase());};
+  $('d_calc').onclick=()=>{$('drawer').classList.remove('on');go('tools');$('c_entry').value=c.price;renderCalc();$('c_stop').focus();};
+  const wk=c.symbol.toLowerCase(),wt=()=>$('d_wl').textContent=wl.includes(wk)?'Watchlist se hatao':'Watchlist mein daalo';wt();$('d_wl').onclick=()=>{toggleWl(wk);wt();};
+  $('d_alert').onclick=()=>{$('drawer').classList.remove('on');go('tools');if(CSYMS.includes(c.symbol.toUpperCase()))$('a_coin').value=c.symbol.toUpperCase();$('a_price').value=c.price;$('a_price').focus();};
+  $('drawer').classList.add('on');$('d_close').focus();
+}
+$('d_close').onclick=()=>$('drawer').classList.remove('on');
+
+// ---------- market pulse ----------
+const MOOD={'Extreme Fear':'Bohat khauf','Fear':'Khauf','Neutral':'Darmiyana','Greed':'Lalach','Extreme Greed':'Bohat lalach'};
+async function loadPulse(){
+  try{
+    const g=(await jget('https://api.coingecko.com/api/v3/global')).data;
+    $('p_cap').textContent=fmtBig(g.total_market_cap.usd);
+    const c=g.market_cap_change_percentage_24h_usd;$('p_chg').textContent=pct(c);$('p_chg').className=c>=0?'up':'down';
+    $('p_dom').textContent=g.market_cap_percentage.btc.toFixed(1)+'%';
+  }catch(e){}
+  try{
+    const f=(await jget('https://api.alternative.me/fng/')).data[0],v=parseInt(f.value,10);
+    $('pin').style.left=Math.max(0,Math.min(100,v))+'%';
+    $('moodtxt').textContent=v+' / 100: '+(MOOD[f.value_classification]||f.value_classification);
+  }catch(e){}
+}
+
+// ---------- news ----------
+const SOURCES=[
+ {name:'Federal Reserve',kind:'official',url:'https://www.federalreserve.gov/feeds/press_all.xml'},
+ {name:'SEC',kind:'official',url:'https://www.sec.gov/news/pressreleases.rss'},
+ {name:'ECB',kind:'official',url:'https://www.ecb.europa.eu/rss/press.html'},
+ {name:'Ethereum Foundation',kind:'official',url:'https://blog.ethereum.org/feed.xml'},
+ {name:'Cointelegraph',kind:'crypto',url:'https://cointelegraph.com/rss'},
+ {name:'CoinDesk',kind:'crypto',url:'https://www.coindesk.com/arc/outboundfeeds/rss/'},
+ {name:'Decrypt',kind:'crypto',url:'https://decrypt.co/feed'}
+];
+let news=[],newsFilter='all';
+function normItems(src,j){
+  if(!j||j.status!=='ok'||!Array.isArray(j.items)) throw new Error('feed khali ya band');
+  return j.items.slice(0,8).map(i=>({title:String(i.title||'').trim(),link:String(i.link||''),date:parseDate(i.pubDate),source:src.name,kind:src.kind}))
+    .filter(x=>x.title&&/^https?:\/\//i.test(x.link));
+}
+async function loadNews(){
+  const res=await Promise.allSettled(SOURCES.map(async s=>normItems(s,await jget('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(s.url)))));
+  const all=[],det=$('newsdetbody');det.innerHTML='';let ok=0;
+  res.forEach((r,i)=>{
+    const line=mk('div',null,(r.status==='fulfilled'?'Chala: ':'Nahi chala: ')+SOURCES[i].name+(r.status==='rejected'?' ('+r.reason.message+')':''));det.appendChild(line);
+    if(r.status==='fulfilled'){ok++;all.push(...r.value);}
+  });
+  const seen=new Set();
+  news=all.sort((a,b)=>(b.date?b.date.getTime():0)-(a.date?a.date.getTime():0)).filter(n=>{const k=n.link+'|'+n.title.toLowerCase();if(seen.has(n.link)||seen.has(n.title.toLowerCase()))return false;seen.add(n.link);seen.add(n.title.toLowerCase());return true;});
+  $('newsstat').textContent=ok+' / '+SOURCES.length+' sources se khabrein aayin';
+  renderNews();renderOff();
+}
+function renderNews(){
+  const feed=$('feed');feed.innerHTML='';
+  const list=news.filter(n=>newsFilter==='all'||n.kind===newsFilter).slice(0,40);
+  if(!list.length){feed.appendChild(mk('li','note','Abhi koi khabar nahi mili. Thori der baad dobara try karein.'));return;}
+  list.forEach(n=>{
+    const li=mk('li','item'),left=mk('div'),meta=mk('div','meta');
+    meta.append(mk('span',n.kind==='official'?'off':null,n.source+(n.kind==='official'?' (official)':'')),mk('span',null,timeAgo(n.date)));
+    const a=mk('a',null,n.title);a.href=n.link;a.target='_blank';a.rel='noopener noreferrer';
+    left.append(meta,a);
+    const b=mk('button','btn alt sm','Samjhao');b.onclick=()=>{go('ai');ask('Is khabar ka matlab aur market par mumkin asar aasan zaban mein samjhao: "'+n.title+'" ('+n.source+')');};
+    li.append(left,b);feed.appendChild(li);
+  });
+}
+function renderOff(){
+  const ul=$('offlist');ul.innerHTML='';
+  const list=news.filter(n=>n.kind==='official').slice(0,5);
+  if(!list.length){ul.appendChild(mk('li','mute','Official updates abhi nahi aayin.'));return;}
+  list.forEach(n=>{const li=mk('li'),m=mk('div','meta');m.append(mk('span','off',n.source),mk('span',null,timeAgo(n.date)));
+    const a=mk('a',null,n.title);a.href=n.link;a.target='_blank';a.rel='noopener noreferrer';a.style.color='var(--text)';li.append(m,a);ul.appendChild(li);});
+}
+document.querySelectorAll('#newsfilter .chip').forEach(b=>b.onclick=()=>{
+  newsFilter=b.dataset.f;document.querySelectorAll('#newsfilter .chip').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));renderNews();
+});
+
+// ---------- assistant ----------
+const MODELS=[["groq","openai/gpt-oss-20b"],["groq","llama-3.1-8b-instant"],["gemini","gemini-3.5-flash-lite"],["gemini","gemini-3.8-flash"]];
+function snapshot(){
+  const p=coins.length?coins.slice(0,15).map(c=>c.symbol.toUpperCase()+' $'+fp(c.price)+(c.chg==null?'':' ('+pct(c.chg).replace('%','')+'% 24h)')).join(', '):'prices abhi load nahi hui';
+  const h=news.slice(0,8).map(n=>'- '+n.source+': '+n.title).join('\n');
+  return 'PRICES ('+new Date().toLocaleString()+'): '+p+'\nTAZA HEADLINES:\n'+(h||'abhi load nahi hui');
+}
+function systemPrompt(){
+  return "Tum crypto aur financial markets seekhne mein madad karne wale assistant ho. Jawab user ki zaban mein (zyada tar Roman Urdu), chhota, seedha aur aasan do. "
+   +"Neeche live data diya hai: current prices aur khabrein sirf isi se batao, apni yaad se kisi coin ki price ya taza khabar mat batao; data mein na ho to saaf kaho ke abhi data nahi hai. "
+   +"Kabhi 'kharido' ya 'becho' ki salah mat do aur kabhi price ki peshgoi mat karo. Uski jagah samjhao ke kya ho raha hai, kya risk hain, aur trader ko kin cheezon (stop-loss, position size, trend, volume) par sochna chahiye. Munasib jagah par yaad dilao ke crypto mein poora paisa doob sakta hai.\n"+snapshot();
+}
+const hist=[];
+function bubble(cls,text){const d=mk('div','msg '+cls),s=mk('div',null,text);d.appendChild(s);$('log').appendChild(d);d.scrollIntoView({block:'end'});return d;}
+async function streamGroq(model,msgs,key,onDelta,signal){
+  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages:msgs,stream:true}),signal});
+  if(!r.ok) throw new Error('HTTP '+r.status+' '+(await r.text()).slice(0,140));
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='',full='';
+  while(true){
+    const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+    while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
+      if(!line.startsWith('data:'))continue;const d=line.slice(5).trim();if(d==='[DONE]')continue;
+      try{const t=JSON.parse(d).choices[0].delta.content;if(t){full+=t;onDelta(full);}}catch(e){}}
+  }
+  if(!full) throw new Error('khali jawab');return full;
+}
+async function callGemini(model,msgs,key){
+  const contents=msgs.filter(m=>m.role!=='system').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:msgs[0].content}]},contents})});
+  if(!r.ok) throw new Error('HTTP '+r.status+' '+(await r.text()).slice(0,140));
+  const j=await r.json(),p=j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts;
+  if(!p) throw new Error('khali jawab');return p.map(x=>x.text||'').join('');
+}
+async function ask(text){
+  text=(text||$('q').value).trim();if(!text)return;
+  $('q').value='';bubble('me',text);hist.push({role:'user',content:text});$('send').disabled=true;
+  const ai=bubble('ai','...'),out=ai.firstChild,errors=[];let used=null,reply='',aborted=false;ctl=new AbortController();$('stop').hidden=false;
+  const msgs=[{role:'system',content:systemPrompt()},...hist.slice(-10)];
+  for(const [p,m] of MODELS){
+    const key=getKey(p);if(!key)continue;
+    try{reply=p==='groq'?await streamGroq(m,msgs,key,t=>{renderMd(out,t);ai.scrollIntoView({block:'end'});},ctl.signal):await callGemini(m,msgs,key);used=p+'/'+m;break;}
+    catch(e){if(e.name==='AbortError'){aborted=true;break;}errors.push(p+'/'+m+': '+e.message);}
+  }
+  if(aborted){ai.appendChild(mk('div','tag','Roka gaya.'));hist.pop();}else if(used){renderMd(out,reply);hist.push({role:'assistant',content:reply});ai.appendChild(mk('div','tag','Model: '+used));}
+  else{out.textContent=errors.length?('Sab models fail ho gaye:\n'+errors.join('\n')):'Koi key save nahi hai. "Keys" kholein aur Groq (ya Gemini) ki key paste karein.';hist.pop();}
+  $('send').disabled=false;$('stop').hidden=true;
+}
+$('send').onclick=()=>ask();
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&innerWidth>860){e.preventDefault();ask();}});
+['Aaj ka crypto market ka summary do','Taza official khabron ka matlab batao','Stop-loss kya hota hai?','Position size kaise tay karte hain?'].forEach(t=>{const b=mk('button','chip',t);b.onclick=()=>ask(t);$('sugg').appendChild(b);});
+bubble('ai','Salam! Kisi coin ya khabar ke baare mein poochhein. Main samjhane mein madad karta hoon; kharidne ya bechne ki salah nahi deta.');
+
+// ---------- risk calculator ----------
+function calcRisk(bal,riskPct,entry,stop,target){
+  if(!(bal>0&&riskPct>0&&entry>0&&stop>0)||entry===stop)return null;
+  const riskAmt=bal*riskPct/100,perUnit=Math.abs(entry-stop),qty=riskAmt/perUnit,posValue=qty*entry;
+  const r={side:stop<entry?'Long':'Short',riskAmt,qty,posValue,lev:posValue/bal};
+  if(target>0){const reward=(stop<entry?target-entry:entry-target);r.rr=reward/perUnit;r.profit=qty*reward;}
+  return r;
+}
+function stat(k,v,cls){const d=mk('div','stat'),b=mk('b',cls||null,v);d.append(mk('small',null,k),b);return d;}
+function renderCalc(){
+  const v=id=>parseFloat($(id).value),r=calcRisk(v('c_bal'),v('c_risk'),v('c_entry'),v('c_stop'),v('c_target')),o=$('c_out');o.innerHTML='';
+  if(!r){o.appendChild(mk('div','note','Entry aur stop-loss daalein, natija yahan aayega.'));return;}
+  o.append(stat('Side',r.side),stat('Risk ki raqam','$'+r.riskAmt.toFixed(2)),stat('Quantity (coins)',String(+r.qty.toPrecision(5))),stat('Position value','$'+r.posValue.toFixed(2)),stat('Zaroori leverage',r.lev<=1?'Nahi, spot kaafi':r.lev.toFixed(1)+'x'));
+  if(r.rr!=null)o.append(stat('Reward : risk',r.rr>0?'1 : '+r.rr.toFixed(2):'Target galat taraf hai'),stat('Mumkin faida',r.rr>0?'$'+r.profit.toFixed(2):'-'));
+}
+['c_bal','c_risk','c_entry','c_stop','c_target'].forEach(id=>$(id).oninput=renderCalc);renderCalc();
+
+// ---------- journal ----------
+let journal=[];try{journal=JSON.parse(localStorage.getItem('journal_v1')||'[]');}catch(e){journal=[];}
+function saveJ(){try{localStorage.setItem('journal_v1',JSON.stringify(journal));}catch(e){}}
+function pnl(t){return (t.exit-t.entry)*t.qty*(t.side==='long'?1:-1);}
+function money(n){return (n>=0?'+$':'-$')+Math.abs(n).toFixed(2);}
+function renderJ(){
+  const st=$('j_stats'),ls=$('j_list');st.innerHTML='';ls.innerHTML='';
+  const wins=journal.filter(t=>pnl(t)>0).length,total=journal.reduce((a,t)=>a+pnl(t),0);
+  st.append(stat('Trades',String(journal.length)),stat('Win rate',journal.length?(wins/journal.length*100).toFixed(0)+'%':'-'),stat('Kul faida/nuqsan',money(total),total>=0?'up':'down'));
+  if(!journal.length){const tr=mk('tr'),td=mk('td','note','Abhi koi trade nahi. Upar apna pehla trade likhein.');td.colSpan=3;tr.appendChild(td);ls.appendChild(tr);return;}
+  journal.slice().reverse().forEach((t,ri)=>{
+    const idx=journal.length-1-ri,p=pnl(t),tr=mk('tr'),a=mk('td');
+    a.append(mk('div','sym',t.coin+', '+t.side),mk('div','nm',t.entry+' \u2192 '+t.exit+' \u00d7 '+t.qty+(t.note?' ('+t.note+')':'')));
+    const b=mk('td',p>=0?'up':'down',money(p)),c=mk('td'),x=mk('button','btn alt sm','Hatao');x.setAttribute('aria-label','Trade hatao');
+    x.onclick=()=>{journal.splice(idx,1);saveJ();renderJ();};c.appendChild(x);tr.append(a,b,c);ls.appendChild(tr);
+  });
+}
+$('j_add').onclick=()=>{
+  const t={coin:($('j_coin').value||'?').toUpperCase().slice(0,12),side:$('j_side').value,entry:parseFloat($('j_entry').value),exit:parseFloat($('j_exit').value),qty:parseFloat($('j_qty').value),note:$('j_note').value.slice(0,60)};
+  if(!(t.entry>0&&t.exit>0&&t.qty>0)){alert('Entry, Exit aur Quantity sahi daalein.');return;}
+  journal.push(t);saveJ();renderJ();['j_entry','j_exit','j_qty','j_note'].forEach(id=>$(id).value='');
+};
+renderJ();
+
+// ---------- heatmap ----------
+let heatOn=false;
+function treemap(items,x,y,w,h,out){
+  if(!items.length) return;
+  if(items.length===1){out.push({it:items[0],x,y,w,h});return;}
+  const total=items.reduce((s,i)=>s+i.v,0);let acc=0,k=0;
+  for(k=0;k<items.length-1;k++){acc+=items[k].v;if(acc>=total/2)break;}
+  k=Math.min(k,items.length-2);
+  const a=items.slice(0,k+1),b=items.slice(k+1),sa=a.reduce((s,i)=>s+i.v,0)/total;
+  if(w>=h){treemap(a,x,y,w*sa,h,out);treemap(b,x+w*sa,y,w*(1-sa),h,out);}
+  else{treemap(a,x,y,w,h*sa,out);treemap(b,x,y+h*sa,w,h*(1-sa),out);}
+}
+function renderHeat(){
+  const box=$('heat');box.innerHTML='';
+  const W=box.clientWidth,H=box.clientHeight;if(!W||!H||!coins.length) return;
+  const items=coins.slice(0,25).map(c=>({c,v:Math.sqrt(c.mcap||1e9)})).sort((a,b)=>b.v-a.v),out=[];
+  treemap(items,0,0,W,H,out);
+  out.forEach(t=>{
+    const c=t.it.c,chg=c.chg||0,a=Math.round(18+Math.min(Math.abs(chg),8)/8*62),d=mk('div','tile');
+    d.style.cssText='left:'+(t.x+1)+'px;top:'+(t.y+1)+'px;width:'+Math.max(0,t.w-2)+'px;height:'+Math.max(0,t.h-2)+'px;background:color-mix(in srgb,var('+(chg>=0?'--up':'--down')+') '+a+'%,var(--surface))';
+    d.tabIndex=0;d.title=c.name+' '+pct(chg);
+    if(t.w>38&&t.h>30){d.appendChild(mk('b',null,c.symbol.toUpperCase()));if(t.w>62&&t.h>48)d.appendChild(mk('span',null,pct(chg)));}
+    d.onclick=()=>openCoin(c);d.onkeydown=ev=>{if(ev.key==='Enter')openCoin(c);};box.appendChild(d);
+  });
+}
+document.querySelectorAll('#mk_view button').forEach(b=>b.onclick=()=>{
+  heatOn=b.dataset.v==='heat';
+  document.querySelectorAll('#mk_view button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+  $('heat').hidden=!heatOn;$('listwrap').hidden=heatOn;
+  if(heatOn) renderHeat();
+});
+
+// ---------- big chart ----------
+const CSYMS=['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','TRX','AVAX','LINK','DOT','LTC'];
+const CH={sym:'BTC',tf:'1h',type:'candles',ma:false,n:100,data:[],hover:-1,hy:null,fallback:false,cache:{},geom:null};
+CSYMS.forEach(s=>{const o=mk('option',null,s+' / USDT');o.value=s;$('ch_coin').appendChild(o);});
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function sma(arr,n){const out=[];let s=0;for(let i=0;i<arr.length;i++){s+=arr[i];if(i>=n)s-=arr[i-n];out.push(i>=n-1?s/n:null);}return out;}
+function setSeg(id,val){document.querySelectorAll('#'+id+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===String(val)?'true':'false'));}
+function openChart(sym){if(CSYMS.includes(sym)){CH.sym=sym;$('ch_coin').value=sym;CH.hover=-1;}go('chart');}
+async function loadChart(force){
+  const key=CH.sym+CH.tf,c=CH.cache[key];
+  if(c&&!force&&Date.now()-c.t<30000){CH.data=c.d;CH.fallback=false;drawChart();return;}
+  $('ch_note').textContent='Chart load ho raha hai...';
+  try{
+    const qs='/api/v3/klines?symbol='+CH.sym+'USDT&interval='+CH.tf+'&limit=200';let k;try{k=await jget('https://api.binance.com'+qs);}catch(e){k=await jget('https://data-api.binance.vision'+qs);}
+    const d=k.map(r=>({t:r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5]}));
+    CH.cache[key]={t:Date.now(),d};CH.data=d;CH.fallback=false;
+    $('ch_note').textContent='Data: Binance, '+CH.sym+'/USDT. Chart par mouse ya ungli le jayein to har candle ki tafseel dikhegi.';
+  }catch(e){
+    const coin=coins.find(x=>x.symbol.toUpperCase()===CH.sym);
+    if(coin&&coin.spark){const n=coin.spark.length;CH.data=coin.spark.map((p,i)=>({t:Date.now()-(n-i)*3600e3,o:p,h:p,l:p,c:p,v:0}));CH.fallback=true;
+      $('ch_note').textContent='Binance se candles nahi aayin, is liye 7 din ka line chart dikha rahe hain.';}
+    else{CH.data=[];$('ch_note').textContent='Chart ka data nahi aaya ('+e.message+'). Internet check karein.';}
+  }
+  drawChart();
+}
+function updateLegend(d){
+  const L=$('ch_legend');L.innerHTML='';
+  const up=d.c>=d.o,chg=d.o?(d.c-d.o)/d.o*100:0;
+  const add=(k,v,cls)=>{const s=mk('span');s.append(mk('i',null,k+' '),mk('b',cls||null,v));L.appendChild(s);};
+  L.appendChild(mk('span','lgh',CH.sym+'/USDT, '+CH.tf));
+  if(CH.fallback){add('Price','$'+fp(d.c));return;}
+  add('O',fp(d.o));add('H',fp(d.h));add('L',fp(d.l));add('C',fp(d.c),up?'up':'down');add('Change',pct(chg),up?'up':'down');
+  add('Vol',d.v>=1000?(d.v/1000).toFixed(1)+'K':d.v.toFixed(1));
+  if(CH.hover>=0) L.appendChild(mk('span','lgt',new Date(d.t).toLocaleString()));
+}
+function drawChart(){
+  const cv=$('cv'),box=$('chartbox'),dpr=window.devicePixelRatio||1,full=box.classList.contains('full');
+  const W=Math.max(280,box.clientWidth-20),H=full?Math.max(300,box.clientHeight-80):Math.max(340,Math.min(560,Math.round(innerHeight*0.6)));
+  cv.style.width=W+'px';cv.style.height=H+'px';cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const all=CH.data,col={up:cssv('--up'),down:cssv('--down'),grid:cssv('--line'),text:cssv('--mute'),ac:cssv('--gold'),bl:cssv('--blue'),fg:cssv('--text'),bg:cssv('--bg'),on:cssv('--onacc')};
+  g.font='12px "IBM Plex Sans",system-ui,sans-serif';
+  if(!all.length){g.fillStyle=col.text;g.textAlign='center';g.fillText('Chart ka data abhi nahi hai',W/2,H/2);CH.geom=null;$('ch_legend').textContent='';return;}
+  const n=Math.min(CH.n,all.length),off=all.length-n,vis=all.slice(off);
+  const padL=8,padR=64,padT=12,padB=24,volH=Math.round(H*0.16),pw=W-padL-padR,ph=H-padT-padB-volH-8;
+  let lo=Math.min(...vis.map(d=>d.l)),hi=Math.max(...vis.map(d=>d.h));const pad=(hi-lo)*0.06||hi*0.01;lo-=pad;hi+=pad;
+  const y=p=>padT+(hi-p)/(hi-lo)*ph,step=pw/n,x=i=>padL+step*i+step/2,maxV=Math.max(...vis.map(d=>d.v),1);
+  g.textBaseline='middle';g.lineWidth=1;g.strokeStyle=col.grid;g.fillStyle=col.text;g.textAlign='left';
+  for(let i=0;i<=5;i++){const p=lo+(hi-lo)*i/5,yy=Math.round(y(p))+.5;g.beginPath();g.moveTo(padL,yy);g.lineTo(W-padR,yy);g.stroke();g.fillText(fp(p),W-padR+6,yy);}
+  g.textAlign='center';g.textBaseline='alphabetic';
+  const tl=Math.max(2,Math.floor(pw/120));
+  for(let k=0;k<tl;k++){const i=Math.min(n-1,Math.floor((k+0.5)*n/tl)),dt=new Date(vis[i].t);
+    g.fillText(CH.tf==='1d'?dt.toLocaleDateString([],{day:'numeric',month:'short'}):dt.toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}),x(i),H-6);}
+  g.textBaseline='middle';
+  vis.forEach((d,i)=>{const vh=d.v/maxV*volH;g.globalAlpha=.28;g.fillStyle=d.c>=d.o?col.up:col.down;g.fillRect(x(i)-step*0.35,H-padB-vh,Math.max(1,step*0.7),vh);});
+  g.globalAlpha=1;
+  if(CH.type==='line'||CH.fallback){
+    g.beginPath();vis.forEach((d,i)=>{i?g.lineTo(x(i),y(d.c)):g.moveTo(x(i),y(d.c));});
+    const lc=vis[n-1].c>=vis[0].c?col.up:col.down;g.strokeStyle=lc;g.lineWidth=2;g.lineJoin='round';g.stroke();
+    g.lineTo(x(n-1),padT+ph);g.lineTo(x(0),padT+ph);g.closePath();g.globalAlpha=.12;g.fillStyle=lc;g.fill();g.globalAlpha=1;
+  }else{
+    vis.forEach((d,i)=>{const c=d.c>=d.o?col.up:col.down,cx=Math.round(x(i))+.5;g.strokeStyle=c;g.fillStyle=c;g.lineWidth=1;
+      g.beginPath();g.moveTo(cx,y(d.h));g.lineTo(cx,y(d.l));g.stroke();
+      const bw=Math.max(1,step*0.7);g.fillRect(x(i)-bw/2,y(Math.max(d.o,d.c)),bw,Math.max(1,Math.abs(y(d.o)-y(d.c))));});
+  }
+  if(CH.ma&&!CH.fallback){
+    [[20,col.ac],[50,col.bl]].forEach(([p,c])=>{const m=sma(all.map(d=>d.c),p).slice(off);let started=false;g.beginPath();
+      m.forEach((v,i)=>{if(v==null)return;if(started)g.lineTo(x(i),y(v));else{g.moveTo(x(i),y(v));started=true;}});g.strokeStyle=c;g.lineWidth=1.5;g.stroke();});
+  }
+  const last=vis[n-1],ly=y(last.c),lcol=last.c>=last.o?col.up:col.down;
+  g.setLineDash([4,4]);g.strokeStyle=lcol;g.lineWidth=1;g.beginPath();g.moveTo(padL,ly);g.lineTo(W-padR,ly);g.stroke();g.setLineDash([]);
+  g.fillStyle=lcol;g.fillRect(W-padR+1,ly-10,padR-2,20);g.fillStyle=col.on;g.textAlign='left';g.fillText(fp(last.c),W-padR+5,ly);
+  if(CH.hover>=0&&CH.hover<n){
+    const cx=Math.round(x(CH.hover))+.5;g.strokeStyle=col.text;g.lineWidth=1;g.setLineDash([3,3]);
+    g.beginPath();g.moveTo(cx,padT);g.lineTo(cx,H-padB);g.stroke();
+    if(CH.hy!=null){g.beginPath();g.moveTo(padL,CH.hy);g.lineTo(W-padR,CH.hy);g.stroke();}
+    g.setLineDash([]);
+    if(CH.hy!=null){const pv=hi-(CH.hy-padT)/ph*(hi-lo);g.fillStyle=col.fg;g.fillRect(W-padR+1,CH.hy-10,padR-2,20);g.fillStyle=col.bg;g.fillText(fp(pv),W-padR+5,CH.hy);}
+  }
+  CH.geom={padL,padT,ph,step,n};
+  updateLegend(vis[CH.hover>=0&&CH.hover<n?CH.hover:n-1]);
+}
+function hoverAt(ev){
+  const G=CH.geom;if(!G)return;const r=$('cv').getBoundingClientRect(),px=ev.clientX-r.left,py=ev.clientY-r.top,i=Math.floor((px-G.padL)/G.step);
+  CH.hover=(i>=0&&i<G.n)?i:-1;CH.hy=(py>=G.padT&&py<=G.padT+G.ph)?py:null;drawChart();
+}
+$('cv').addEventListener('pointermove',hoverAt);$('cv').addEventListener('pointerdown',hoverAt);
+$('cv').addEventListener('pointerleave',()=>{CH.hover=-1;CH.hy=null;drawChart();});
+$('ch_coin').onchange=e=>{CH.sym=e.target.value;CH.hover=-1;loadChart();};
+document.querySelectorAll('#ch_tf button').forEach(b=>b.onclick=()=>{CH.tf=b.dataset.v;setSeg('ch_tf',CH.tf);CH.hover=-1;loadChart();});
+document.querySelectorAll('#ch_type button').forEach(b=>b.onclick=()=>{CH.type=b.dataset.v;setSeg('ch_type',CH.type);drawChart();});
+document.querySelectorAll('#ch_n button').forEach(b=>b.onclick=()=>{CH.n=+b.dataset.v;setSeg('ch_n',CH.n);CH.hover=-1;drawChart();});
+$('ch_ma').onclick=()=>{CH.ma=!CH.ma;$('ch_ma').setAttribute('aria-pressed',CH.ma?'true':'false');drawChart();};
+$('ch_full').onclick=()=>{$('chartbox').classList.add('full');drawChart();};
+$('ch_close').onclick=()=>{$('chartbox').classList.remove('full');drawChart();};
+window.addEventListener('resize',()=>{if($('v-chart').classList.contains('on'))drawChart();if(heatOn&&$('v-market').classList.contains('on'))renderHeat();});
+setInterval(()=>{if(!document.hidden&&$('v-chart').classList.contains('on'))loadChart(true);},30000);
+
+// ---------- upgrades: currency, watchlist, alerts, markdown, csv ----------
+let ctl=null,cur='USD',rate=0,wl=[],wlOnly=false,alerts=[];
+try{cur=localStorage.getItem('cur')||'USD';rate=+localStorage.getItem('rate')||0;wl=JSON.parse(localStorage.getItem('wl')||'[]');alerts=JSON.parse(localStorage.getItem('alerts')||'[]');}catch(e){}
+function mny(n){return cur==='PKR'&&rate?'Rs '+fp(n*rate):'$'+fp(n);}
+async function loadRate(){try{const j=await jget('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=pkr');rate=j.tether.pkr;localStorage.setItem('rate',rate);}catch(e){}if(cur==='PKR'){renderTicker();renderPrices();}}
+document.querySelectorAll('#cur button').forEach(b=>b.onclick=()=>{cur=b.dataset.v;setSeg('cur',cur);try{localStorage.setItem('cur',cur);}catch(e){}if(cur==='PKR'&&!rate)loadRate();renderTicker();renderPrices();});
+function toast(m){const t=mk('div','toast',m);t.setAttribute('role','status');document.body.appendChild(t);setTimeout(()=>t.remove(),5000);}
+function toggleWl(k){wl=wl.includes(k)?wl.filter(x=>x!==k):[...wl,k];try{localStorage.setItem('wl',JSON.stringify(wl));}catch(e){}renderPrices();}
+$('wl_only').onclick=()=>{wlOnly=!wlOnly;$('wl_only').setAttribute('aria-pressed',String(wlOnly));renderPrices();};
+function saveA(){try{localStorage.setItem('alerts',JSON.stringify(alerts));}catch(e){}}
+function renderA(){const ls=$('a_list');ls.innerHTML='';
+  if(!alerts.length){const tr=mk('tr'),td=mk('td','note','Koi alert nahi.');td.colSpan=2;tr.appendChild(td);ls.appendChild(tr);return;}
+  alerts.forEach((a,i)=>{const tr=mk('tr'),c=mk('td'),d=mk('td');c.append(mk('div','sym',a.sym),mk('div','nm',(a.dir==='up'?'Upar jaye to: $':'Neeche aaye to: $')+fp(a.price)));
+    const x=mk('button','btn alt sm','Hatao');x.onclick=()=>{alerts.splice(i,1);saveA();renderA();};d.appendChild(x);tr.append(c,d);ls.appendChild(tr);});}
+function checkAlerts(){let hit=false;
+  alerts=alerts.filter(a=>{const c=coins.find(x=>x.symbol.toUpperCase()===a.sym);if(!c)return true;
+    if((a.dir==='up'&&c.price>=a.price)||(a.dir==='down'&&c.price<=a.price)){const m=a.sym+' ne $'+fp(a.price)+' cross kiya (abhi $'+fp(c.price)+')';toast(m);
+      try{if('Notification' in window&&Notification.permission==='granted')new Notification('Crypto Desk',{body:m});}catch(e){}hit=true;return false;}
+    return true;});
+  if(hit){saveA();renderA();}}
+$('a_add').onclick=()=>{const sym=$('a_coin').value,p=parseFloat($('a_price').value),c=coins.find(x=>x.symbol.toUpperCase()===sym);
+  if(!(p>0)||!c){toast('Pehle prices load hone dein, phir sahi alert price daalein.');return;}
+  alerts.push({sym,price:p,dir:p>=c.price?'up':'down'});saveA();renderA();
+  try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();}catch(e){}$('a_price').value='';};
+CSYMS.forEach(s=>{const o=mk('option',null,s+' / USDT');o.value=s;$('a_coin').appendChild(o);});renderA();
+function renderMd(el,text){el.textContent='';
+  text.split('\n').forEach(line=>{const d=mk('div');const t=line.replace(/^\s*[-*]\s+/,'\u2022 ').replace(/^#+\s*/,'');
+    t.split(/\*\*(.+?)\*\*/g).forEach((p,i)=>d.append(i%2?mk('b',null,p):document.createTextNode(p)));
+    if(!line.trim())d.style.height='.6em';el.appendChild(d);});}
+$('stop').onclick=()=>{if(ctl)ctl.abort();};
+$('clr').onclick=()=>{hist.length=0;$('log').innerHTML='';bubble('ai','Chat saaf ho gayi. Naya sawal poochhein.');};
+$('j_csv').onclick=()=>{const q=v=>{v=String(v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';};
+  const rows=['coin,side,entry,exit,qty,pnl,note',...journal.map(t=>[q(t.coin),t.side,t.entry,t.exit,t.qty,pnl(t).toFixed(2),q(t.note)].join(','))];
+  const a=mk('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download='trade-journal.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+
+// ---------- converter ----------
+const FIATS=['USD','PKR','EUR','GBP','AED','SAR','INR'];let fx={};
+try{fx=JSON.parse(localStorage.getItem('fx')||'{}');}catch(e){}
+async function loadFx(){try{fx=(await jget('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies='+FIATS.map(x=>x.toLowerCase()).join(','))).tether;localStorage.setItem('fx',JSON.stringify(fx));}catch(e){}renderConv();}
+function fillConv(){
+  ['v_from','v_to'].forEach((id,k)=>{const sel=$(id),keep=sel.value||(k?'PKR':'USD');sel.innerHTML='';
+    [...FIATS,...coins.slice(0,25).map(c=>c.symbol.toUpperCase()).filter(x=>!FIATS.includes(x))].forEach(x=>{const o=mk('option',null,x);o.value=x;sel.appendChild(o);});
+    sel.value=[...sel.options].some(o=>o.value===keep)?keep:(k?'PKR':'USD');});
+  renderConv();}
+function usdOf(sym){
+  if(FIATS.includes(sym)){const u=fx.usd,f=fx[sym.toLowerCase()];return u&&f?u/f:null;}
+  const c=coins.find(x=>x.symbol.toUpperCase()===sym);return c?c.price:null;}
+function renderConv(){const o=$('v_out');o.innerHTML='';
+  const a=parseFloat($('v_amt').value),f=usdOf($('v_from').value),t=usdOf($('v_to').value);
+  if(!(a>=0)||!f||!t){o.appendChild(mk('div','note','Amount daalein aur rates load hone ka intezar karein.'));return;}
+  o.append(stat('Natija',fp(a*f/t)+' '+$('v_to').value),stat('1 '+$('v_from').value,fp(f/t)+' '+$('v_to').value));}
+$('v_amt').oninput=$('v_from').onchange=$('v_to').onchange=renderConv;
+$('v_swap').onclick=()=>{const a=$('v_from').value;$('v_from').value=$('v_to').value;$('v_to').value=a;renderConv();};
+
+// ---------- start ----------
+try{coins=JSON.parse(localStorage.getItem('px_cache')||'[]');}catch(e){coins=[];}if(coins.length){renderTicker();renderPrices();$('status').textContent='Purani prices dikha rahe hain, update ho rahi hain...';}
+loadPrices();loadPulse();loadNews();loadRate();setSeg('cur',cur);fillConv();loadFx();
+setInterval(()=>{if(!document.hidden)loadPrices();},60000);
+setInterval(()=>{if(!document.hidden){loadPulse();loadNews();}},300000);
+</script></body></html>
